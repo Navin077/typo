@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Typewriter and Blinking Text</title>
+    <style>
+      body {
+        margin: 0;
+        height: 100vh;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        background-color: #f0f0f0;
+        font-family: "Courier New", Courier, monospace;
+      }
+
+      .textbox {
+        text-align: center;
+        margin-bottom: 20px;
+      }
+
+      h1 {
+        font-size: 24px;
+        margin: 0;
+        position: relative;
+      }
+
+      /* Typewriter effect */
+      .typewriter {
+        display: inline-block;
+        border-right: 2px solid black; /* cursor */
+        white-space: nowrap;
+        overflow: hidden;
+        animation: blink-caret 0.75s step-end infinite;
+      }
+
+      /* Blinking cursor animation */
+      @keyframes blink-caret {
+        from,
+        to {
+          border-color: transparent;
+        }
+        50% {
+          border-color: black;
+        }
+      }
+
+      .video-container {
+        width: 80%;
+        max-width: 800px;
+        aspect-ratio: 16 / 9;
+        background: black;
+        border: 2px solid red;
+        border-radius: 8px;
+        overflow: hidden;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+      }
+
+      video {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        border-radius: 8px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="textbox">
+      <h1><span id="typewriter" class="typewriter"></span></h1>
+      <p>This is a simple video player centered on the page.</p>
+    </div>
+
+    <div class="video-container">
+        <video controls loop autoplay muted>
+        <source src="3130376-uhd_3840_2160_24fps.mp4" type="video/mp4" />
+        Your browser does not support the video tag.
+      </video>
+    </div>
+
+    <script>
+      const texts = [
+        "Centered Video Player",
+        "Awesome Typewriter Effect",
+        "Blinking Cursor Text",
+        "Welcome to Naveen's Page",
+      ];
+      let count = 0;
+      let index = 0;
+      let currentText = "";
+      let letter = "";
+      let typewriterElement = document.getElementById("typewriter");
+
+      function type() {
+        if (count === texts.length) {
+          count = 0;
+        }
+        currentText = texts[count];
+        letter = currentText.slice(0, ++index);
+
+        typewriterElement.textContent = letter;
+        if (letter.length === currentText.length) {
+          setTimeout(() => {
+            index = 0;
+            count++;
+            setTimeout(type, 500);
+          }, 2000); // 2 seconds pause after full word
+        } else {
+          setTimeout(type, 150); // typing speed
+        }
+      }
+
+      type();
+    </script>
+  </body>
+</html>
