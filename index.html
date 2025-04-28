@@ -61,6 +61,9 @@
         flex-direction: column;
         justify-content: center;
         align-items: center;
+        padding: 20px;
+        height: 100%;
+        width: 100%;
       }
 
       /* Textbox */
@@ -109,18 +112,7 @@
         align-items: center;
         box-shadow: 0px 8px 32px 0px rgba(31, 38, 135, 0.37);
         padding: 10px;
-        animation: videoFadeIn 1.5s ease forwards;
-      }
-
-      @keyframes videoFadeIn {
-        from {
-          opacity: 0;
-          transform: scale(0.95);
-        }
-        to {
-          opacity: 1;
-          transform: scale(1);
-        }
+        margin: auto; /* Center the video container */
       }
 
       video {
@@ -171,6 +163,50 @@
         width: 80%;
         max-width: 300px;
       }
+
+      /* Responsive Design */
+      @media (max-width: 768px) {
+        .video-container {
+          width: 90%;
+        }
+
+        .controls button {
+          padding: 8px 15px;
+          font-size: 14px;
+        }
+
+        h1 {
+          font-size: 24px;
+        }
+
+        .time {
+          font-size: 14px;
+        }
+      }
+
+      @media (max-width: 480px) {
+        .video-container {
+          width: 100%;
+        }
+
+        .controls {
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+
+        .controls button {
+          width: auto;
+          padding: 8px 15px;
+        }
+
+        h1 {
+          font-size: 20px;
+        }
+
+        .time {
+          font-size: 12px;
+        }
+      }
     </style>
   </head>
   <body>
@@ -187,6 +223,13 @@
       <div class="video-container">
         <video id="video" loop muted autoplay>
           <source src="3130376-uhd_3840_2160_24fps.mp4" type="video/mp4" />
+          <track
+            src="subtitles.vtt"
+            kind="subtitles"
+            srclang="en"
+            label="English"
+            default
+          />
           Your browser does not support the video tag.
         </video>
       </div>
@@ -197,6 +240,13 @@
         <button onclick="download()">Download Video</button>
         <button onclick="toggleFullscreen()">Fullscreen</button>
         <button onclick="togglePictureInPicture()">Picture-in-Picture</button>
+        <button onclick="toggleSubtitles()">Toggle Subtitles</button>
+        <button onclick="skip(-10)">⏪ Skip -10s</button>
+        <button onclick="skip(10)">⏩ Skip +10s</button>
+        <button onclick="toggleLoop()">Toggle Loop</button>
+        <button onclick="toggleMute()">Mute / Unmute</button>
+        <button onclick="toggleTheme()">Toggle Theme</button>
+        <button onclick="takeScreenshot()">Take Screenshot</button>
       </div>
 
       <input type="range" id="progressBar" min="0" max="100" value="0" />
@@ -258,6 +308,9 @@
       const progressBar = document.getElementById("progressBar");
       const volumeSlider = document.getElementById("volumeSlider");
       const timeDisplay = document.getElementById("time");
+      const thumbnailPreview = document.getElementById("thumbnailPreview");
+      const thumbnailImage = document.getElementById("thumbnailImage");
+      const backgroundMusic = document.getElementById("backgroundMusic");
 
       function playPause() {
         if (video.paused) {
@@ -295,6 +348,41 @@
         }
       }
 
+      function toggleSubtitles() {
+        const track = video.textTracks[0];
+        track.mode = track.mode === "showing" ? "hidden" : "showing";
+      }
+
+      function skip(seconds) {
+        video.currentTime += seconds;
+      }
+
+      function toggleLoop() {
+        video.loop = !video.loop;
+        alert(`Looping is now ${video.loop ? "enabled" : "disabled"}`);
+      }
+
+      function toggleMute() {
+        video.muted = !video.muted;
+      }
+
+      function toggleTheme() {
+        document.body.classList.toggle("dark-mode");
+      }
+
+      function takeScreenshot() {
+        const canvas = document.getElementById("screenshotCanvas");
+        const context = canvas.getContext("2d");
+        canvas.width = video.videoWidth;
+        canvas.height = video.videoHeight;
+        context.drawImage(video, 0, 0, canvas.width, canvas.height);
+
+        const link = document.createElement("a");
+        link.download = "screenshot.png";
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+      }
+
       function changeSpeed() {
         const speed = document.getElementById("playbackSpeed").value;
         video.playbackRate = speed;
@@ -321,6 +409,33 @@
         return `${minutes}:${secs < 10 ? "0" + secs : secs}`;
       }
 
+      // Thumbnail Preview
+      progressBar.addEventListener("mousemove", (e) => {
+        const previewTime =
+          (e.offsetX / progressBar.offsetWidth) * video.duration;
+        thumbnailPreview.style.left = `${e.pageX}px`;
+        thumbnailPreview.style.top = `${e.pageY - 100}px`;
+        thumbnailPreview.style.display = "block";
+
+        // Replace with logic to generate or fetch thumbnail
+        thumbnailImage.src = `thumbnails/preview-${Math.floor(
+          previewTime
+        )}.jpg`;
+      });
+
+      progressBar.addEventListener("mouseleave", () => {
+        thumbnailPreview.style.display = "none";
+      });
+
+      // Background Music
+      function toggleMusic() {
+        if (backgroundMusic.paused) {
+          backgroundMusic.play();
+        } else {
+          backgroundMusic.pause();
+        }
+      }
+
       // 3D Background Movement
       const background = document.getElementById("background-layer");
       document.addEventListener("mousemove", (e) => {
@@ -328,6 +443,14 @@
         const y = (window.innerHeight / 2 - e.pageY) / 80;
         background.style.transform = `translate(${x}px, ${y}px)`;
       });
+
+      // Auto-Pause Timer
+      let autoPauseTimer = setTimeout(() => {
+        video.pause();
+        alert("Video paused automatically after 5 minutes.");
+      }, 5 * 60 * 1000);
+
+      video.addEventListener("play", () => clearTimeout(autoPauseTimer));
     </script>
   </body>
 </html>
