@@ -3,96 +3,234 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <title>Typewriter and Blinking Text</title>
+    <title>3D Background Video Player</title>
     <style>
-      body {
+      /* Reset & Body */
+      body,
+      html {
         margin: 0;
-        height: 100vh;
+        padding: 0;
+        height: 100%;
+        overflow: hidden;
+        font-family: "Courier New", Courier, monospace;
+      }
+
+      body {
         display: flex;
         flex-direction: column;
         justify-content: center;
         align-items: center;
-        background-color: #f0f0f0;
-        font-family: "Courier New", Courier, monospace;
+        background: linear-gradient(270deg, #ff7e5f, #feb47b, #86a8e7, #91eae4);
+        background-size: 800% 800%;
+        animation: backgroundAnimation 20s ease infinite;
       }
 
+      @keyframes backgroundAnimation {
+        0% {
+          background-position: 0% 50%;
+        }
+        50% {
+          background-position: 100% 50%;
+        }
+        100% {
+          background-position: 0% 50%;
+        }
+      }
+
+      /* Background Layer for 3D */
+      .background-layer {
+        position: absolute;
+        width: 120%;
+        height: 120%;
+        top: -10%;
+        left: -10%;
+        background: radial-gradient(
+          circle at center,
+          rgba(255, 255, 255, 0.1),
+          transparent 70%
+        );
+        z-index: 0;
+        transition: transform 0.1s ease-out;
+        pointer-events: none;
+      }
+
+      /* Main Content */
+      #content {
+        z-index: 1;
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+      }
+
+      /* Textbox */
       .textbox {
         text-align: center;
         margin-bottom: 20px;
+        color: #fff;
+        text-shadow: 2px 2px 5px #000;
       }
 
       h1 {
-        font-size: 24px;
+        font-size: 30px;
         margin: 0;
-        position: relative;
       }
 
-      /* Typewriter effect */
       .typewriter {
         display: inline-block;
-        border-right: 2px solid black; /* cursor */
+        border-right: 2px solid white;
         white-space: nowrap;
         overflow: hidden;
         animation: blink-caret 0.75s step-end infinite;
       }
 
-      /* Blinking cursor animation */
       @keyframes blink-caret {
         from,
         to {
           border-color: transparent;
         }
         50% {
-          border-color: black;
+          border-color: white;
         }
       }
 
+      /* Glassmorphism Video Container */
       .video-container {
         width: 80%;
         max-width: 800px;
-        aspect-ratio: 16 / 9;
-        background: black;
-        border: 2px solid red;
-        border-radius: 8px;
+        aspect-ratio: 16/9;
+        background: rgba(255, 255, 255, 0.15);
+        border: 2px solid rgba(255, 255, 255, 0.3);
+        border-radius: 20px;
+        backdrop-filter: blur(20px);
         overflow: hidden;
         display: flex;
         justify-content: center;
         align-items: center;
+        box-shadow: 0px 8px 32px 0px rgba(31, 38, 135, 0.37);
+        padding: 10px;
+        animation: videoFadeIn 1.5s ease forwards;
+      }
+
+      @keyframes videoFadeIn {
+        from {
+          opacity: 0;
+          transform: scale(0.95);
+        }
+        to {
+          opacity: 1;
+          transform: scale(1);
+        }
       }
 
       video {
         width: 100%;
         height: 100%;
         object-fit: cover;
+        border-radius: 10px;
+      }
+
+      /* Custom Controls */
+      .controls {
+        margin-top: 15px;
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: center;
+      }
+
+      .controls button {
+        padding: 10px 25px;
+        background: rgba(0, 0, 0, 0.6);
+        color: #fff;
+        font-weight: bold;
+        border: none;
         border-radius: 8px;
+        cursor: pointer;
+        transition: background 0.4s, transform 0.2s;
+        backdrop-filter: blur(10px);
+        box-shadow: 2px 2px 5px rgba(0, 0, 0, 0.4);
+      }
+
+      .controls button:hover {
+        background: rgba(0, 0, 0, 0.8);
+        transform: scale(1.05);
+      }
+
+      .time {
+        margin-top: 10px;
+        font-size: 16px;
+        color: #fff;
+        text-shadow: 1px 1px 2px #000;
+      }
+
+      #volumeSlider,
+      #progressBar,
+      #playbackSpeed {
+        margin-top: 10px;
+        width: 80%;
+        max-width: 300px;
       }
     </style>
   </head>
   <body>
-    <div class="textbox">
-      <h1><span id="typewriter" class="typewriter"></span></h1>
-      <p>This is a simple video player centered on the page.</p>
-    </div>
+    <!-- 3D Background Layer -->
+    <div class="background-layer" id="background-layer"></div>
 
-    <div class="video-container">
-        <video controls loop autoplay muted>
-        <source src="3130376-uhd_3840_2160_24fps.mp4" type="video/mp4" />
-        Your browser does not support the video tag.
-      </video>
+    <!-- Main Content -->
+    <div id="content">
+      <div class="textbox">
+        <h1><span id="typewriter" class="typewriter"></span></h1>
+        <p>Modern 3D Video Player 🎥</p>
+      </div>
+
+      <div class="video-container">
+        <video id="video" loop muted autoplay>
+          <source src="3130376-uhd_3840_2160_24fps.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
+        </video>
+      </div>
+
+      <div class="controls">
+        <button onclick="playPause()">Play / Pause</button>
+        <button onclick="replay()">Replay</button>
+        <button onclick="download()">Download Video</button>
+        <button onclick="toggleFullscreen()">Fullscreen</button>
+        <button onclick="togglePictureInPicture()">Picture-in-Picture</button>
+      </div>
+
+      <input type="range" id="progressBar" min="0" max="100" value="0" />
+      <input
+        type="range"
+        id="volumeSlider"
+        min="0"
+        max="1"
+        step="0.1"
+        value="1"
+      />
+      <select id="playbackSpeed" onchange="changeSpeed()">
+        <option value="0.5">0.5x</option>
+        <option value="1" selected>1x</option>
+        <option value="1.5">1.5x</option>
+        <option value="2">2x</option>
+      </select>
+
+      <div class="time" id="time"></div>
     </div>
 
     <script>
+      // Typewriter Effect
       const texts = [
-        "Centered Video Player",
-        "Awesome Typewriter Effect",
-        "Blinking Cursor Text",
-        "Welcome to Naveen's Page",
+        "Modern 3D Video Player",
+        "Super Cool Parallax",
+        "Download Your Video",
+        "Enjoy Naveen!",
       ];
       let count = 0;
       let index = 0;
       let currentText = "";
       let letter = "";
-      let typewriterElement = document.getElementById("typewriter");
+      const typewriterElement = document.getElementById("typewriter");
 
       function type() {
         if (count === texts.length) {
@@ -107,13 +245,89 @@
             index = 0;
             count++;
             setTimeout(type, 500);
-          }, 2000); // 2 seconds pause after full word
+          }, 2000);
         } else {
-          setTimeout(type, 150); // typing speed
+          setTimeout(type, 100);
         }
       }
 
       type();
+
+      // Video Controls
+      const video = document.getElementById("video");
+      const progressBar = document.getElementById("progressBar");
+      const volumeSlider = document.getElementById("volumeSlider");
+      const timeDisplay = document.getElementById("time");
+
+      function playPause() {
+        if (video.paused) {
+          video.play();
+        } else {
+          video.pause();
+        }
+      }
+
+      function replay() {
+        video.currentTime = 0;
+        video.play();
+      }
+
+      function download() {
+        const a = document.createElement("a");
+        a.href = video.querySelector("source").src;
+        a.download = "downloaded-video.mp4";
+        a.click();
+      }
+
+      function toggleFullscreen() {
+        if (!document.fullscreenElement) {
+          video.requestFullscreen();
+        } else {
+          document.exitFullscreen();
+        }
+      }
+
+      function togglePictureInPicture() {
+        if (document.pictureInPictureElement) {
+          document.exitPictureInPicture();
+        } else {
+          video.requestPictureInPicture();
+        }
+      }
+
+      function changeSpeed() {
+        const speed = document.getElementById("playbackSpeed").value;
+        video.playbackRate = speed;
+      }
+
+      video.addEventListener("timeupdate", () => {
+        const current = formatTime(video.currentTime);
+        const total = formatTime(video.duration);
+        timeDisplay.textContent = `${current} / ${total}`;
+        progressBar.value = (video.currentTime / video.duration) * 100;
+      });
+
+      progressBar.addEventListener("input", () => {
+        video.currentTime = (progressBar.value / 100) * video.duration;
+      });
+
+      volumeSlider.addEventListener("input", () => {
+        video.volume = volumeSlider.value;
+      });
+
+      function formatTime(seconds) {
+        const minutes = Math.floor(seconds / 60);
+        const secs = Math.floor(seconds % 60);
+        return `${minutes}:${secs < 10 ? "0" + secs : secs}`;
+      }
+
+      // 3D Background Movement
+      const background = document.getElementById("background-layer");
+      document.addEventListener("mousemove", (e) => {
+        const x = (window.innerWidth / 2 - e.pageX) / 80;
+        const y = (window.innerHeight / 2 - e.pageY) / 80;
+        background.style.transform = `translate(${x}px, ${y}px)`;
+      });
     </script>
   </body>
 </html>
